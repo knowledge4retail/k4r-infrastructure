@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "k4r-dt-api.fullname" . }}-db-schema-docu
+  labels:
+    {{- include "k4r-dt-api.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: {{ .Values.storageClass }}

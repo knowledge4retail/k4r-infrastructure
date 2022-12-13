@@ -1,0 +1,19 @@
+{{- if .Values.issuer.letsencryptStaging.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt-staging
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: {{ .Values.issuer.letsencryptStaging.email }}
+    privateKeySecretRef:
+      name: letsencrypt-staging
+    solvers:
+      - selector: {}
+        http01:
+          ingress:
+            class: nginx
+{{- end }}

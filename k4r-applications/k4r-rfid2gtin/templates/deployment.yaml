@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k4r-rfid2gtin.fullname" . }}
+  labels:
+    {{- include "k4r-rfid2gtin.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "k4r-rfid2gtin.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "k4r-rfid2gtin.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /swagger-ui/index.html
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 60
+            httpGet:
+              path: /swagger-ui/index.html
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

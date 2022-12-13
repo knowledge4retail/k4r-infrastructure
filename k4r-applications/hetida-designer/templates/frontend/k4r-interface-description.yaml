@@ -1,0 +1,12 @@
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: hetida-frontend
+spec:
+ serviceName: {{ include "hetida.fullname" . }}-frontend
+ prettyName: "Hetida Designer UI" # manuell
+ description: "Web Interface to the K4R AI-Engine" # manuell
+ version: {{ .Values.components.frontend.image.tag | default .Chart.AppVersion }}
+ interfaceType: "WEBUI"
+ refFunctional: "https://{{(index .Values.ingress.hosts 0).host | default "www.knowledge4retail.org"}}/"
+ refDocs: "https://github.com/hetida/hetida-designer"

@@ -1,0 +1,6 @@
+---
+clientCertificate:
+  commonName: "*.knowledge4retail.local"
+
+serverCertificate:
+  commonName: "*.knowledge4retail.local"

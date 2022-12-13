@@ -1,0 +1,17 @@
+---
+ingress:
+  enabled: true
+  annotations:
+    cert-manager.io/issuer: letsencrypt
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"
+  hostname: auth.test.knowledge4retail.org 
+  hosts:
+    - host: auth.test.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: true
+  cert:
+    - hosts:
+        - auth.test.knowledge4retail.org
+      secretName: auth.test.knowledge4retail.org-tls

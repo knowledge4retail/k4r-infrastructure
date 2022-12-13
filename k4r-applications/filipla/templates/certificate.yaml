@@ -1,0 +1,20 @@
+{{- if or .Values.components.backend.ingress.enabled .Values.components.web.ingress.enabled }}
+{{- if or .Values.components.backend.ingress.tls  .Values.components.web.ingress.tls }}
+{{- range .Values.components.web.ingress.tls }} ## This line is stupid!
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .secretName }}
+  labels: {{- include "filipla.labels" $ | nindent 4 }}
+spec:
+  secretName: {{ .secretName }}
+  issuerRef: {{ toYaml $.Values.components.web.ingress.issuerRef | nindent 4 }}
+  commonName: {{ .secretName }}
+  dnsNames:
+  {{- range .hosts }}
+    - {{ . | quote }}
+  {{- end }}
+{{- end }}
+{{- end }}
+{{- end }}

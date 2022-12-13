@@ -1,0 +1,52 @@
+---
+components:
+  backend:
+    ingress:
+      enabled: true
+      issuerRef:
+        name: letsencrypt
+      hosts:
+        - host: filipla.sandbox.knowledge4retail.org
+          paths:
+            - path: /api(/|$)(.*)
+              pathType: Prefix
+              backend:
+                service:
+                  name: backend
+                  port: 8000
+      tls:
+        - hosts:
+          - filipla.sandbox.knowledge4retail.org
+          secretName: filipla.sandbox.knowledge4retail.org
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+  web:
+    ingress:
+      enabled: true
+      issuerRef:
+        name: letsencrypt
+      hosts:
+        - host: filipla.sandbox.knowledge4retail.org
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: web
+                  port: 8080
+      tls:
+        - hosts:
+          - filipla.sandbox.knowledge4retail.org
+          secretName: filipla.sandbox.knowledge4retail.org
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 32Mi

@@ -1,0 +1,20 @@
+---
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-rfid2gtin
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 256Mi
+  requests:
+    cpu: 200m
+    memory: 128Mi

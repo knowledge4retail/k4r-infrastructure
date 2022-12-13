@@ -1,0 +1,19 @@
+{{- if .Values.issuer.letsencrypt.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: letsencrypt
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: {{ .Values.issuer.letsencrypt.email }}
+    privateKeySecretRef:
+      name: letsencrypt
+    solvers:
+      - selector: {}
+        http01:
+          ingress:
+            class: nginx
+{{- end }}

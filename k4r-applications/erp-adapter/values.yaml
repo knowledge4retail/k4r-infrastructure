@@ -1,0 +1,34 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    postgres:
+      url: jdbc:postgresql://postgresql.default.svc.cluster.local:5432/k4r?currentSchema=erpadapter_v1 # Override k4r-dev with your namespace
+      user: k4r
+    dtApiUrl:
+      url: http://k4r-dt-api.default.svc.cluster.local:8090/k4r/api/v0
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-pa-projects/k4r-erp-adapter/k4r-erp-adapter
+  pullPolicy: IfNotPresent
+  tag: ""
+securityContext:
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080  
+
+ingress:
+  enabled: false
+  hosts:
+    - host: erp-adapter.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - erp-adapter.default.knowledge4retail.org
+      secretName: erp-adapter.default.knowledge4retail.org

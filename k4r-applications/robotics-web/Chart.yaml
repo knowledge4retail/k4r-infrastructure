@@ -1,0 +1,5 @@
+apiVersion: v2
+description: Robotic Web Services
+name: robotics-web
+type: application
+version: "0.1"

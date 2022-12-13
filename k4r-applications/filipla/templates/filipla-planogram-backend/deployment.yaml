@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "filipla.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+  name: {{include "filipla.fullname" . }}-backend
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "filipla.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "filipla.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      volumes:
+      - name: filipla-planogram-backend-config
+        configMap:
+          name: {{ include "filipla.fullname" . }}-backend-config
+      containers:
+      - name: filipla-planogram-backend
+        image: "{{ .Values.components.backend.image.repository }}:{{ .Values.components.backend.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.components.backend.image.pullPolicy }}
+        volumeMounts:
+        - name: filipla-planogram-backend-config
+          mountPath: /usr/share/nginx/html/assets/filipla-planogram-backend-config.json
+          subPath: FILIPLA_PLANOGRAM_BACKEND_CONFIG
+        ports:
+          - name: http
+            containerPort: 8000
+            protocol: TCP
+        livenessProbe:
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          httpGet:
+            path: /test
+            port: http
+        readinessProbe:
+          initialDelaySeconds: 30
+          httpGet:
+            path: /test
+            port: http
+        resources:
+      {{- toYaml .Values.components.backend.resources | nindent 10 }}
+        env:
+        - name: RESTART_TRIGGER
+          value: {{ .Values.components.backend.restartTrigger | quote }}
+

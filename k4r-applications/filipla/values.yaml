@@ -1,0 +1,65 @@
+---
+replicaCount: 1
+
+components:
+  backend:
+    image:
+      repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-filipla/asset-reference-service
+      pullPolicy: IfNotPresent
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: ""
+    restartTrigger: 5
+    service:
+      type: ClusterIP
+      port: 8000
+    ingress:
+      enabled: false
+      annotations: {nginx.ingress.kubernetes.io/rewrite-target: /$2}
+      issuerRef:
+        name: letsencrypt
+      hosts:
+        - host: filipla.default.knowledge4retail.org
+          paths:
+            - path: /api(/|$)(.*)
+              pathType: Prefix
+              backend:
+                service:
+                  name: backend
+                  port: 8000
+      tls:
+        - hosts:
+          - filipla.default.knowledge4retail.org
+          secretName: filipla.default.knowledge4retail.org
+    resources: {}
+  web:
+    app:
+      HETIDA_WORKFLOW_ENDPOINT: "https://hetida.default.knowledge4retail.org/api/workflows/Cda55abd-8be5-4d61-b627-bad67d284a37/execute"
+    image:
+      repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-filipla/shop-floor-visualisation
+      pullPolicy: IfNotPresent
+      # Overrides the image tag whose default is the chart appVersion.
+      tag: ""
+    restartTrigger: 8
+    service:
+      type: ClusterIP
+      port: 8080
+    ingress:
+      enabled: false
+      annotations: {}
+      issuerRef:
+        name: letsencrypt
+      hosts:
+        - host: filipla.default.knowledge4retail.org
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: web
+                  port: 8080
+      tls:
+        - hosts:
+          - filipla.default.knowledge4retail.org
+          secretName: filipla.default.knowledge4retail.org
+
+tlsAuthDisabled: false

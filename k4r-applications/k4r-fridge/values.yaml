@@ -1,0 +1,32 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    dtApiUrl:
+      url: http://k4r-dt-api.default.svc.cluster.local:8090/k4r/api/v0
+    kafka:
+      bootstrapServers:
+        consumer: kafka:9092
+        producer: kafka:9092
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-pa-projects/k4r-intelligent-fridge/k4r-fridge
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+securityContext:
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 200m
+    memory: 512Mi

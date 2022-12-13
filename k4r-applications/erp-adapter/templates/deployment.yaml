@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "erp-adapter.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "erp-adapter.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "erp-adapter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "erp-adapter.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: {{ .Values.app.env.postgres.url }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.app.env.postgres.user }}
+            - name: DT_API_URL
+              value: {{ .Values.app.env.dtApiUrl.url }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: db-dt-api-password
+                  optional: false
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /swagger-ui/index.html
+              port: http
+            initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /swagger-ui/index.html
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

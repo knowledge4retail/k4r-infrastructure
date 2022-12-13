@@ -1,0 +1,46 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    postgres:
+      url: jdbc:postgresql://postgresql.default.svc.cluster.local:5432/k4r?currentSchema=dm # Override k4r-dev with your namespace
+      user: k4r
+    storeApi:
+      url: http://k4r-dt-api.default.svc.cluster.local:8090/k4r/api/v0 # Override k4r-dev with your namespace
+    hetida:
+      backendUrl: http://hetida-designer-backend.default.svc.cluster.local:8080 # Override k4r-dev with your namespace
+      componentId: D1141c80-00c0-44a5-8a24-58ed121bdb70 ## Get value from hetida designer component DFKI->DistanceMatrix
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-distance-matrix-api/k4r-distance-matrix-api
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+securityContext:
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8095
+
+ingress:
+  enabled: false
+  hosts:
+    - host: distance-matrix-api.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - distance-matrix-api.default.knowledge4retail.org
+      secretName: distance-matrix-api.default.knowledge4retail.org
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 1Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi

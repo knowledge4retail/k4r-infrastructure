@@ -1,0 +1,4 @@
+---
+persistence:
+  storageClass: standard
+  size: 1Gi

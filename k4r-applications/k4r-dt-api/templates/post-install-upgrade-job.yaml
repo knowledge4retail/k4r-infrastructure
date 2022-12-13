@@ -1,0 +1,55 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+  annotations:
+    "helm.sh/hook": post-install, post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded, hook-failed
+spec:
+  ttlSecondsAfterFinished: 100 # make sure to automatically delete the job after 100 seconds from finishing
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: post-install-documentation-job
+          image: "schemaspy/schemaspy:6.1.0"
+          command:
+            - sh
+            - ./generate-schema-doc.sh 
+          # args: []
+          env:
+            - name: DATASOURCE_USERNAME
+              value: {{ .Values.app.env.postgres.user }}
+            - name: DATASOURCE_HOST
+              value: {{ .Values.dtApiSchemaDocumentation.dbHost }}
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: db-dt-api-password
+                  optional: false
+          volumeMounts:
+            - name: schema-documentation-script
+              mountPath: /generate-schema-doc.sh
+              subPath: generate-schema-doc.sh
+            - mountPath: /output
+              name: db-schema-output  
+
+      volumes:
+        - name: schema-documentation-script
+          configMap:
+            name: {{ include "k4r-dt-api.fullname" . }}-schema-documentation
+        - name: db-schema-output
+          persistentVolumeClaim:
+            claimName: {{ include "k4r-dt-api.fullname" . }}-db-schema-docu 
+

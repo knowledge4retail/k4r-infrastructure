@@ -1,0 +1,16 @@
+# based on https://www.civo.com/learn/using-websockets-with-ingress-controller
+# and hetida/templates/backend
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "robotics-web.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "robotics-web.selectorLabels" . | nindent 4 }}
+  ports:
+    - name: websocket
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: websocket

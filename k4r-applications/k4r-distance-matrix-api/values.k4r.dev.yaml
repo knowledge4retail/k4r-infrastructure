@@ -1,0 +1,26 @@
+---
+app:
+  env:
+    postgres:
+      url: jdbc:postgresql://postgresql.k4r-dev.svc.cluster.local:5432/k4r?currentSchema=dm
+      user: k4r
+    storeApi:
+      url: http://k4r-dt-api.k4r-dev.svc.cluster.local:8090/k4r/api/v0
+    hetida:
+      backendUrl: http://hetida-designer-backend.k4r-dev.svc.cluster.local:8080
+      componentId: 13206563-155b-46ff-bedc-34489f2e9f77
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: distance-matrix-api.dev.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - distance-matrix-api.dev.knowledge4retail.org
+      secretName: distance-matrix-api.dev.knowledge4retail.org
+      

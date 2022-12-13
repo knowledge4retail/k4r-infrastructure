@@ -1,0 +1,12 @@
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: knowrob
+spec:
+ serviceName: {{ include "knowrob.fullname" . }}
+ prettyName: "KnowRob"
+ description: "K4R Knowledge Processing Engine"
+ version: {{ .Values.image.tag | default .Chart.AppVersion }}
+ interfaceType: "API"
+ refFunctional: "https://{{(index .Values.ingress.hosts 0).host | default "www.knowledge4retail.org"}}"
+ refDocs: "https://github.com/K4R-IAI/knowrob_k4r"

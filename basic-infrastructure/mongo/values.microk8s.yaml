@@ -1,0 +1,4 @@
+---
+persistence:
+  storageClass: microk8s-hostpath
+  size: 1Gi

@@ -1,0 +1,30 @@
+---
+app:
+  env:
+    postgres:
+      url: jdbc:postgresql://postgresql.k4r-sandbox.svc.cluster.local:5432/k4r?currentSchema=erpadapter_v1 # Override k4r-dev with your namespace
+      user: k4r
+    dtApiUrl:
+      url: http://k4r-dt-api.k4r-sandbox.svc.cluster.local:8090/k4r/api/v0
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1Gi
+  requests:
+    cpu: 300m
+    memory: 384Mi
+
+ingress:
+  issuerRef:
+    name: letsencrypt
+  enabled: true
+  hosts:
+    - host: erp-adapter.sandbox.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - erp-adapter.sandbox.knowledge4retail.org
+      secretName: erp-adapter.sandbox.knowledge4retail.org

@@ -1,0 +1,6 @@
+apiVersion: v2
+appVersion: 0.1.30
+description: Helm chart for K4R dt api
+name: k4r-dt-api
+type: application
+version: 0.1.0

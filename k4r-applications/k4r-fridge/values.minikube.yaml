@@ -1,0 +1,6 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    dtApiUrl:
+      url: http://k4r-dt-api:8090/k4r/api/v0

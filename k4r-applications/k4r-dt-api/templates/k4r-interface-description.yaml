@@ -1,0 +1,43 @@
+---
+### Swagger
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: k4r-dt-api-swagger
+spec:
+ serviceName: {{ include "k4r-dt-api.fullname" . }}
+ prettyName: "DT-API Rest"
+ description: "OpenAPI Interface to the K4R Digital Twin"
+ version: {{ .Values.image.tag | default .Chart.AppVersion }}
+ interfaceType: "API"
+ refFunctional: "https://{{(index .Values.ingress.hosts 0).host | default "www.knowledge4retail.org"}}/k4r/swagger-ui/index.html"
+ refDocs: "https://www.knowledge4retail.org/docs/dt-api"
+---
+### GraphiQL
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: k4r-dt-api-graphiql
+spec:
+ serviceName: {{ include "k4r-dt-api.fullname" . }}
+ prettyName: "DT-API GrapiQL"
+ description: "GraphiQL Query Editor for K4R Digital Twin"
+ version: {{ .Values.image.tag | default .Chart.AppVersion }}
+ interfaceType: "WEBUI"
+ refFunctional: "https://{{(index .Values.ingress.hosts 0).host | default "www.knowledge4retail.org"}}/k4r/graphiql"
+ refDocs: "https://github.com/graphql/graphiql"
+---
+### Voyager
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: k4r-dt-api-voyager
+spec:
+ serviceName: {{ include "k4r-dt-api.fullname" . }}
+ prettyName: "DT-API Voyager"
+ description: "Interactive graph of the K4R Digital Twin GraphQL API"
+ version: {{ .Values.image.tag | default .Chart.AppVersion }}
+ interfaceType: "WEBUI"
+ refFunctional: "https://{{(index .Values.ingress.hosts 0).host | default "www.knowledge4retail.org"}}/k4r/voyager"
+ refDocs: "https://github.com/IvanGoncharov/graphql-voyager"
+---

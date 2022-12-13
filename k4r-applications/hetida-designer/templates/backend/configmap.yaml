@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "hetida.fullname" . }}-hetida-initdb
+  labels:
+    {{- include "hetida.labels" . | nindent 4 }}
+  namespace: {{ .Release.Namespace }}
+data:
+  create_user_and_database.sh: |-
+    psql --host postgresql -U postgres -v hetida_user_password=$HD_DATABASE_PASSWORD -f ./hetida-init-db.sql
+  hetida-init-db.sql: |-
+    CREATE USER hetida_designer_dbuser WITH LOGIN NOSUPERUSER PASSWORD :'hetida_user_password';
+    CREATE DATABASE hetida_designer_db;
+    GRANT ALL PRIVILEGES ON DATABASE hetida_designer_db TO hetida_designer_dbuser;

@@ -1,0 +1,6 @@
+---
+persistence:
+  storageClass: standard
+  size: 1Gi
+livenessProbe:
+  initialDelaySeconds: 120

@@ -1,0 +1,7 @@
+---
+installCRDs: true
+
+controller:
+  watchIngressWithoutClass: true
+  config:
+    proxy-body-size: 8m

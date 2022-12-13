@@ -1,0 +1,17 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: {{ include "k4r-dt-api.fullname" .}}-schema-documentation
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "k4r-dt-api.labels" . | nindent 4 }}
+data:
+  generate-schema-doc.sh: |-
+    #!/bin/sh
+    export MAIN_CLASS=$(unzip -p schemaspy*.jar META-INF/MANIFEST.MF | grep Main-Class | awk -F ': ' '{sub(/\r/,"",$2);print $2}')
+    [ "$(ls -A /drivers)" ] && export DRIVER_PATH=/drivers/ || export DRIVER_PATH=/drivers_inc/
+    echo "Running Main-Class $MAIN_CLASS"
+    echo -n "With drivers:"
+    ls -Ax $DRIVER_PATH | sed -e 's/  */, /g'
+    java -cp *:$DRIVER_PATH* $MAIN_CLASS -o /output "$@"~ $ -t pgsql -db {{ .Values.dtApiSchemaDocumentation.dbName }} -host $DATASOURCE_HOST -s {{ .Values.dtApiSchemaDocumentation.currentSchema }} -u $DATASOURCE_USERNAME -p $PGPASSWORD -hq -imageformat svg schemaspy.jar

@@ -1,0 +1,24 @@
+---
+ingress:
+  issuerRef:
+    name: self-signed-issuer
+  enabled: true
+  hosts:
+    - host: erp-adapter.knowledge4retail.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - erp-adapter.knowledge4retail.local
+      secretName: erp-adapter.knowledge4retail.local
+
+tlsAuthDisabled: true
+
+app:
+  env:
+    postgres:
+      url: jdbc:postgresql://postgresql:5432/k4r?currentSchema=erpadapter_v1 # Override k4r-dev with your namespace
+      user: k4r
+    dtApiUrl:
+      url: http://k4r-dt-api:8090/k4r/api/v0

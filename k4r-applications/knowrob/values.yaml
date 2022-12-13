@@ -1,0 +1,54 @@
+---
+knowrob:
+  majorVersion: "v1.0" # First 2 numbers of tag
+  externalApis:
+    dt_url:  "http://k4r-dt-api.default.svc.cluster.local:8090/k4r/api/v0/"
+    graphql_url: "http://k4r-dt-api.default.svc.cluster.local:8090/k4r/graphql"
+mongodb:
+  username: "k4r"
+  address: "mongodb"
+  port: 27017
+  uri: "mongodb"
+  dbName: "roslog"
+
+ingress:
+  enabled: false
+  hosts:
+    - host: knowrob.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - knowrob.default.knowledge4retail.org
+      secretName: knowrob.default.knowledge4retail.org
+
+oidcIngress:
+  enabled: false
+  hosts:
+    - host: knowrob-oidc.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - knowrob-oidc.default.knowledge4retail.org
+      secretName: knowrob-oidc.default.knowledge4retail.org      
+
+replicaCount: 1
+
+image:
+  repository: iaik4r/knowrob
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+
+initContainer:
+  version: "v0.3"
+
+service:
+  type: ClusterIP
+  port: 62226

@@ -1,0 +1,28 @@
+---
+knowrob:
+  majorVersion: "v1.0" # First 2 numbers of tag
+  externalApis:
+    dt_url:  "http://k4r-dt-api:8090/k4r/api/v0/"
+    graphql_url: "http://k4r-dt-api:8090/k4r/graphql"
+mongodb:
+  username: "k4r"
+  address: "mongodb"
+  port: 27017
+  uri: "mongodb"
+  dbName: "roslog"
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: self-signed-issuer
+  hosts:
+    - host: knowrob.knowledge4retail.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - knowrob.knowledge4retail.local
+      secretName: knowrob.knowledge4retail.local
+
+tlsAuthDisabled: true

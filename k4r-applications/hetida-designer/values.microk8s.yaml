@@ -1,0 +1,28 @@
+---
+ingress:
+  enabled: true 
+  issuerRef:
+    name: self-signed-issuer
+  hosts:
+    - host: hetida.knowledge4retail.local
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend
+              port: 8080
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port: 8080
+  tls:
+    - hosts:
+        - hetida.knowledge4retail.local
+      secretName: hetida.knowledge4retail.local
+
+tlsAuthDisabled: true      
+
+storageClass: microk8s-hostpath

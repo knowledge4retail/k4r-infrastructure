@@ -1,0 +1,26 @@
+---
+data:
+  ros_master_uri: http://robotics-planning.k4r-sandbox.svc.cluster.local:11311
+
+ingress:
+  enabled: false
+  tlsAuthEnabled: false
+  annotations: {}
+  hosts:
+    - host: robotics-web.default.knowledge4retail.org
+  tls:
+    - hosts:
+      - robotics-web.default.knowledge4retail.org
+      secretName: robotics-web.default.knowledge4retail.org
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-pa-projects/k4r-robotics-web
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v0.306"  ## Must be replaced with a proper image tag, once available!
+
+service:
+  type: ClusterIP
+  port: 3000

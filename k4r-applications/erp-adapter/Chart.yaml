@@ -1,0 +1,6 @@
+apiVersion: v2
+description: Helm chart for K4R ERP Adapter
+name: erp-adapter
+type: application
+version: 0.1.0
+appVersion: 0.0.3

@@ -1,0 +1,9 @@
+---
+app:
+  env:
+    dtApiUrl:
+      url: http://k4r-dt-api.k4r-dev.svc.cluster.local:8090/k4r/api/v0
+    kafka:
+      bootstrapServers:
+        consumer: kafka:9092
+        producer: kafka:9092

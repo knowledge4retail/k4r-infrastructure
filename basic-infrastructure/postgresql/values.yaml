@@ -1,0 +1,28 @@
+---
+securityContext:
+  enabled: true
+  fsGroup: 1001
+containerSecurityContext:
+  enabled: true
+  runAsUser: 1001
+
+existingSecret: "postgresql-passwords"
+postgresqlUsername: k4r
+postgresqlDatabase: k4r
+postgresqlSharedPreloadLibraries: timescaledb,pg_stat_statements,pgaudit
+
+image:
+  repository: timescale/timescaledb
+  tag: 2.2.1-pg11-bitnami
+
+persistence:
+  enabled: true
+  size: 8Gi
+  subPath: data
+volumePermissions:
+  enabled: false
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    enabled: false

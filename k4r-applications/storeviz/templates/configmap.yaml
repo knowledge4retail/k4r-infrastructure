@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: storeviz-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "storeviz.labels" . | nindent 4 }}
+data:
+  STOREVIZ_CONFIG: |-
+    {
+      "DT_API_GRAPHQL_ENDPOINT": "{{ .Values.app.DT_API_GRAPHQL_ENDPOINT }}",
+      "BACKGROUND_COLOR": "{{ .Values.app.BACKGROUND_COLOR }}",
+      "OFFSET_TO_BOTTOM_LEFT": {{ .Values.app.OFFSET_TO_BOTTOM_LEFT }}
+    }

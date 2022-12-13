@@ -1,0 +1,12 @@
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: sap-erp-adapter
+spec:
+ serviceName: {{ include "sap-erp-adapter.fullname" . }}
+ prettyName: "SAP ERP-Adapter Rest"
+ description: "OpenAPI Interface to the SAP ERP-Adapter" 
+ version: {{ .Values.image.tag | default .Chart.AppVersion }}
+ interfaceType: "API"
+ refFunctional: "https://{{(index .Values.ingress.hosts 0).host | default "www.knowledge4retail.org"}}/swagger-ui/index.html"
+ refDocs: "https://www.knowledge4retail.org/docs/sap-erp-adapter"

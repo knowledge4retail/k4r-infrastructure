@@ -1,0 +1,36 @@
+---
+app:
+  env:
+    publicFQDN: portalbackend.default.knowledge4retail.org
+    allowedOrigins: portal.default.knowledge4retail.org
+    kubeApi:
+      url: https://kubernetes.default:443
+    dtApi:
+      url: http://k4r-dt-api.default.svc.cluster.local:8090/k4r/api/v0
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: portalbackend.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - portalbackend.default.knowledge4retail.org
+      secretName: portalbackend.default.knowledge4retail.org      
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-portal-backend
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 8080
+

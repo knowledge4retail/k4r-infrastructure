@@ -1,0 +1,97 @@
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: self-signed-issuer
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  selfSigned: {}
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: self-signed-ca
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  secretName: self-signed-ca
+  duration: 43800h # 5y
+  issuerRef:
+    name: self-signed-issuer
+  commonName: K4R self signed CA
+  isCA: true
+  subject:
+    organizations:
+      - Knowledge4Retail
+    countries:
+      - Germany
+    localities:
+      - Karlsruhe
+    provinces:
+      - Baden-Wuerttemberg
+
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: self-signed-ca
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  ca:
+    secretName: self-signed-ca
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: self-signed-server-certificate
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  secretName: self-signed-server-certificate
+  duration: 8760h # 1y
+  issuerRef:
+    name: self-signed-ca
+  commonName: {{ .Values.serverCertificate.commonName | quote }}
+  dnsNames:
+    - {{ .Values.serverCertificate.commonName | quote }}
+  usages:
+    - server auth
+    - client auth
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: self-signed-client-certificate-passphrase
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+data:
+  passphrase: cTdXZ1BMM09ub3BveVU0YWJrcnc5N0xEM2lxRA==
+
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: self-signed-client-certificate
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "security.labels" . | nindent 4 }}
+spec:
+  secretName: self-signed-client-certificate
+  duration: 8760h # 1y
+  issuerRef:
+    name: self-signed-ca
+  commonName: {{ .Values.clientCertificate.commonName | quote }}
+  dnsNames:
+    - {{ .Values.clientCertificate.commonName | quote }}
+  usages:
+    - client auth
+  keystores:
+    pkcs12:
+      create: true
+      passwordSecretRef:
+        name: self-signed-client-certificate-passphrase
+        key: passphrase

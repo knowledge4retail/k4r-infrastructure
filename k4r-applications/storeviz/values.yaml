@@ -1,0 +1,39 @@
+---
+app:
+  DT_API_GRAPHQL_ENDPOINT: 'https://dt-api.default.knowledge4retail.org/k4r/graphql'
+  BACKGROUND_COLOR: '#16161d'
+  OFFSET_TO_BOTTOM_LEFT: true
+
+ingress:
+  enabled: false
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: storeviz.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - storeviz.default.knowledge4retail.org
+      secretName: storeviz.default.knowledge4retail.org
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-storeviz
+  pullPolicy: IfNotPresent
+securityContext:
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 3000
+
+resources:
+  limits:
+    cpu: 250m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 512Mi

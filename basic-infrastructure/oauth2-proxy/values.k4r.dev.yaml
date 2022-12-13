@@ -1,0 +1,44 @@
+---
+redis:
+  enabled: false
+configuration:
+  existingSecret: oauth2-proxy
+  content: |-
+    provider = "keycloak-oidc"
+    provider_display_name = "Keycloak"
+    oidc_issuer_url = "https://auth.dev.knowledge4retail.org/realms/k4r"
+    redirect_url = "https://oauth2proxy.dev.knowledge4retail.org/oauth2/callback"
+    login_url = "https://auth.dev.knowledge4retail.org/realms/k4r/protocol/openid-connect/auth"
+    redeem_url = "https://auth.dev.knowledge4retail.org/realms/k4r/protocol/openid-connect/token"
+    validate_url = "https://auth.dev.knowledge4retail.org/realms/k4r/protocol/openid-connect/userinfo"
+    email_domains = [ "*" ]
+    scope = "openid profile email"
+    cookie_domains = ".dev.knowledge4retail.org"
+    whitelist_domains = ".dev.knowledge4retail.org"
+    pass_authorization_header = true
+    pass_access_token = true
+    pass_user_headers = true
+    set_authorization_header = true
+    cookie_refresh = "10m"
+    cookie_expire = "30m"
+    ssl_insecure_skip_verify = true
+    skip_jwt_bearer_tokens = true
+    set_xauthrequest = true
+    skip_auth_preflight = true
+ingress:
+  enabled: true
+  certManager: true
+  annotations:
+    cert-manager.io/issuer: letsencrypt
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "128k"    
+  hostname: oauth2proxy.dev.knowledge4retail.org 
+  hosts:
+    - host: oauth2proxy.dev.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: true
+  cert:
+    - hosts:
+        - oauth2proxy.dev.knowledge4retail.org
+      secretName: oauth2proxy.dev.knowledge4retail.org-tls

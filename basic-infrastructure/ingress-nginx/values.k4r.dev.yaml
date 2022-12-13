@@ -1,0 +1,12 @@
+---
+controller:
+  service:
+    loadBalancerIP: "20.47.112.36"
+    annotations: 
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: "MC_k4r-dev_k4r-platform-dev_germanywestcentral"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-monitoring

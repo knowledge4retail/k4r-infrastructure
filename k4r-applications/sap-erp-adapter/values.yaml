@@ -1,0 +1,31 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    erpAdapterUrl:
+      url: http://erp-adapter.default.svc.cluster.local:8080/api/v0
+
+ingress:
+  enabled: false
+  hosts:
+    - host: sap-erp-adapter.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - sap-erp-adapter.default.knowledge4retail.org
+      secretName: sap-erp-adapter.default.knowledge4retail.org
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-pa-projects/k4r-sap-erp-adapter/k4r-sap-erp-adapter
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+securityContext:
+  runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080

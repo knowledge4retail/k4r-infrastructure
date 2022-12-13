@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k4r-dt-api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "k4r-dt-api.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "k4r-dt-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "k4r-dt-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+      {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: docker
+            - name: SPRING_DATASOURCE_URL
+              value: {{ .Values.app.env.postgres.url }}
+            - name: SPRING_DATASOURCE_USERNAME
+              value: {{ .Values.app.env.postgres.user }}
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: db-dt-api-password
+                  optional: false
+            - name: SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS
+              value: {{ .Values.app.env.kafka.bootstrapServers.consumer }}
+            - name: SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS
+              value: {{ .Values.app.env.kafka.bootstrapServers.producer }}
+            - name: AZURE_BLOBSTORAGE_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-storage-secret
+                  key: blobstorageconnectionstring
+            - name: AZURE_BLOBSTORAGE_CONTAINER_DEVICE_IMAGES
+              value: {{ .Values.app.env.blobstorage.container }}  
+          ports:
+            - name: http
+              containerPort: 8090
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /k4r/swagger-ui.html
+              port: http
+            initialDelaySeconds: 60
+          readinessProbe:
+            httpGet:
+              path: /k4r/swagger-ui.html
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+          - mountPath: /usr/app/output
+            name: db-schema-output
+      volumes:
+        - name: db-schema-output
+          persistentVolumeClaim:
+            claimName: {{ include "k4r-dt-api.fullname" . }}-db-schema-docu 
+      initContainers:
+      - name: init-extension-timescale-db
+        image: docker.io/bitnami/postgresql:11.11.0-debian-10-r9
+        command:
+          - psql
+          - -c
+          - "CREATE EXTENSION IF NOT EXISTS TIMESCALEDB CASCADE;"    
+        env:
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: k4r-passwords
+              key: db-master-password
+              optional: false
+        - name: PGHOST
+          value: {{ .Values.initContainer.env.postgres.host }} # Default in values.yaml should be postgresql
+        - name: PGPORT
+          value: {{ .Values.initContainer.env.postgres.port | quote }} # Default in values.yaml should be 5432
+        - name: PGUSER
+          value: {{ .Values.initContainer.env.postgres.user }} # Default in values.yaml should be postgres
+        - name: PGDATABASE
+          value: {{ .Values.initContainer.env.postgres.dbName }} # Default in values.yaml should be k4r
+        securityContext:
+          runAsUser: 1001
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}

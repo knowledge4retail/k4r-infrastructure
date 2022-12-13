@@ -1,0 +1,28 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    postgres:
+      url: jdbc:postgresql://postgresql:5432/k4r?currentSchema=dm
+      user: k4r
+    storeApi:
+      url: http://k4r-dt-api:8090/k4r/api/v0
+    hetida:
+      backendUrl: http://hetida-designer-backend:8080
+      componentId: D1141c80-00c0-44a5-8a24-58ed121bdb70
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: self-signed-issuer
+  hosts:
+    - host: distance-matrix-api.knowledge4retail.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - distance-matrix-api.knowledge4retail.local
+      secretName: distance-matrix-api.knowledge4retail.local
+
+tlsAuthDisabled: true

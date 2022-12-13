@@ -1,0 +1,12 @@
+apiVersion: knowledge4retail.org/v1alpha1
+kind: Interface
+metadata:
+ name: filipla
+spec:
+ serviceName: {{ include "filipla.fullname" . }}-web
+ prettyName: "Filipla"
+ description: "Filialplanung Planogram Application" 
+ version: {{ .Chart.AppVersion }}
+ interfaceType: "WEBUI"
+ refFunctional: "https://{{(index .Values.components.web.ingress.hosts 0).host | default "www.knowledge4retail.org"}}/"
+ refDocs: "https://www.knowledge4retail.org/docs/filipla"

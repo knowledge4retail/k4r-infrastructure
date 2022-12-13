@@ -1,0 +1,11 @@
+---
+issuer:
+  letsencrypt:
+    enabled: true
+    email: info@knowledge4retail.org
+  letsencryptStaging:
+    enabled: true
+    email: info@knowledge4retail.org
+
+clientCertificate:
+  commonName: "*.sandbox.knowledge4retail.org"

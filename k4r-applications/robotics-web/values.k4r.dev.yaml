@@ -1,0 +1,22 @@
+---
+data:
+  ros_master_uri: http://robotics-planning.k4r-dev.svc.cluster.local:11311
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: robotics-web.dev.knowledge4retail.org
+  tls:
+    - hosts:
+      - robotics-web.dev.knowledge4retail.org
+      secretName: robotics-web.dev.knowledge4retail.org
+
+resources:
+  limits:
+    cpu: "300m"
+    memory: "256Mi"
+  requests:
+    cpu: "50m"
+    memory: "128Mi"

@@ -1,0 +1,74 @@
+# based on https://www.civo.com/learn/using-websockets-with-ingress-controller
+# and hetida/templates/apdapters/k4r-apdapter
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "robotics-planning.labels" . | nindent 4 }}
+  name: {{include "robotics-planning.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "robotics-planning.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "robotics-planning.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: "robotics-planning"
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command:
+            - /entrypoint.bash
+            - roslaunch
+            - bringup_planning
+            - planning.launch
+            - --screen
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: PYTHONUNBUFFERED
+              value: "1"
+            - name: ROSAUTH
+              value: "true"
+            - name: DATA_PROVIDER
+              value: "['dtapi']"
+            - name: DTAPI_URI
+              value: "http://k4r-dt-api:8090/k4r/"
+            - name: CERTIFICATE_FILENAME
+              value: ""
+            - name: CERTIFICATE_PATH
+              value: ""
+            - name: ROSBRIDGE_ADDRESS
+              value: "0.0.0.0"
+            - name: ROSBRIDGE_PORT
+              value: "9900"
+            - name: ROSBRIDGE_WEBSOCKET_EXTERNAL_PORT
+              value: "443"
+            - name: SSL
+              value: "false"
+            - name: DTAPI_USE_CERTIFICATE
+              value: "False"
+            - name: PKCS12_PW
+              value: "UNUSED"
+            - name: ROS_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          ports:
+            - name: websocket
+              containerPort: 9900
+              protocol: TCP
+            - name: roscore
+              containerPort: 11311
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

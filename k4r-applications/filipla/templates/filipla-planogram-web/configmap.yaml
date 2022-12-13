@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "filipla.fullname" . }}-web-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "filipla.labels" . | nindent 4 }}
+data:
+  FILIPLA_PLANOGRAM_WEB_CONFIG: |-
+    {
+      "HETIDA_WORKFLOW_URL": "{{ .Values.components.web.app.HETIDA_WORKFLOW_ENDPOINT }}",
+      "DEFAULT_RACK_HEIGHT": 180,
+      "DEFAULT_RACK_WIDTH": 100,
+      "IMAGE_REFERENCE_SERVICE_URL": "/api"
+    }

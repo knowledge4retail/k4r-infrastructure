@@ -1,0 +1,127 @@
+---
+helmDefaults:
+  cleanupOnFail: false
+  wait: true
+  timeout: 600
+  force: false
+  historyMax: 10
+  createNamespace: false
+  skipDeps: true
+  args: []
+    #- --kubeconfig=kubeconfig.{{ .Environment.Name }}.yaml
+    #- --dry-run
+    #- --debug
+
+bases:
+  - environments.yaml
+helmfiles:
+  - ./basic-infrastructure/helmfile.yaml
+
+templates:
+  default: &default
+    chart: k4r-applications/{{`{{ .Release.Name }}`}}
+    namespace: {{ .Namespace }}
+    missingFileHandler: Warn
+    values:
+    - k4r-applications/{{`{{ .Release.Name }}`}}/values.yaml
+    - k4r-applications/{{`{{ .Release.Name }}`}}/values.{{`{{ .Environment.Name }}`}}.yaml
+
+releases:
+  - name: security
+    needs:
+      - cert-manager
+    <<: *default
+
+  - name: k4r-distance-matrix-api
+    needs:
+      - hetida-designer
+      - postgresql
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: k4r-dt-api
+    needs:
+      - postgresql
+      - kafka
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: k4r-rfid2gtin
+    <<: *default
+
+  - name: erp-adapter
+    needs:
+      - k4r-dt-api
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: sap-erp-adapter
+    needs:
+      - k4r-dt-api
+      - erp-adapter
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: k4r-fridge
+    needs:
+      - kafka
+    <<: *default
+
+  - name: knowrob
+    needs:
+      - mongodb
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: hetida-designer
+    needs:
+      - postgresql
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: filipla
+    needs:
+      - hetida-designer
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: robotics-planning
+    needs:
+      # important: this has to be at least v0.2
+      - knowrob
+      - cert-manager
+    <<: *default
+
+  - name: robotics-web
+    needs:
+      - robotics-planning
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: storeviz
+    needs:
+      - k4r-dt-api
+      - k4r-crd
+      - cert-manager
+    <<: *default
+
+  - name: k4r-portal
+    needs:
+      - k4r-portal-backend
+      - cert-manager
+    <<: *default
+
+  - name: k4r-portal-backend
+    needs:
+      - k4r-crd
+      - k4r-dt-api
+      - cert-manager
+    <<: *default     

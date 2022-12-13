@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "knowrob.fullname" . }}
+  labels:
+    {{- include "knowrob.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "knowrob.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "knowrob.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: ROS_LOG_DIR
+              value: "/tmp/"
+            - name: MONGO_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: db-mongodb-password
+                  optional: false
+            - name: KNOWROB_MONGODB_PKG_URI # see this page https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/
+              value: mongodb://{{ .Values.mongodb.username }}:$(MONGO_PASSWORD)@{{ .Values.mongodb.address }}:{{ .Values.mongodb.port }}/{{ .Values.mongodb.dbName }}?authSource={{ .Values.mongodb.dbName }}
+            - name: KNOWROB_MONGODB_URI 
+              value: mongodb://{{ .Values.mongodb.username }}:$(MONGO_PASSWORD)@{{ .Values.mongodb.address }}:{{ .Values.mongodb.port }}/{{ .Values.mongodb.dbName }}?authSource={{ .Values.mongodb.dbName }}
+            - name: KNOWROB_MONGODB_PKG
+              value: {{ .Values.mongodb.dbName }}
+            - name: KNOWROB_PORT
+              value: "62226"
+            - name: KNOWROB_VERSION
+              value: {{ .Values.knowrob.majorVersion }}
+            - name: DT_URL
+              value: {{ .Values.knowrob.externalApis.dt_url }}
+            - name: GRAPHQL_URL
+              value: {{ .Values.knowrob.externalApis.graphql_url }}
+          command: ["/bin/bash", "entrypoint.sh", "roslaunch", "knowrob_k4r", "knowrob_k4r.launch"]
+          ports:
+            - name: http
+              containerPort: 62226
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          livenessProbe:
+            exec:
+              command: ["python3", "/home/ros/test.py"]
+            initialDelaySeconds: 360
+          volumeMounts:
+            - name: entrypoint
+              mountPath: /home/ros/entrypoint.sh
+              subPath: entrypoint.sh
+      initContainers:
+      - name: init-knowrob
+        image: "iaik4r/knowrob-init:{{ .Values.initContainer.version | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        command: ["python", "/home/ros/init.py"]
+        volumeMounts:
+          - name: init-entrypoint
+            mountPath: /home/ros/init.py
+            subPath: init.py
+        env:
+          - name: MONGO_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: k4r-passwords
+                key: db-mongodb-password
+                optional: false
+          - name: KNOWROB_MONGODB_PKG_URI
+            value: mongodb://{{ .Values.mongodb.username }}:$(MONGO_PASSWORD)@{{ .Values.mongodb.address }}:{{ .Values.mongodb.port }}/{{ .Values.mongodb.dbName }}?authSource={{ .Values.mongodb.dbName }}
+      volumes:
+        - name: entrypoint
+          configMap:
+            name: {{ include "knowrob.fullname" . }}-entrypoint
+        - name: init-entrypoint
+          configMap:
+            name: {{ include "knowrob.fullname" . }}-init-entrypoint
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: k4r-rfid2gtin
+description: A Helm chart for k4r-rfid2gtin
+type: application
+version: 0.1.0
+appVersion: "0.1.1"

@@ -1,0 +1,65 @@
+---
+app:
+  env:
+    activeSpringProfile: docker
+    postgres:
+      url: jdbc:postgresql://postgresql.k4r-dev.svc.cluster.local:5432/k4r?currentSchema=dt_v1 # Override k4r-dev with your namespace
+      user: k4r
+    kafka:
+      bootstrapServers:
+        consumer: kafka:9092
+        producer: kafka:9092
+    blobstorage:
+      container: k4r-device-images
+
+dtApiSchemaDocumentation:
+  dbName: k4r
+  currentSchema: dt_v1
+  dbHost: postgresql
+
+# if needed so set storage class
+storageClass: default
+
+ingress:
+  enabled: false
+oidcIngress:
+  enabled: false
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-dt-api/k4r-dt-api
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+securityContext:
+  runAsUser: 1000
+
+initContainer:
+  env:
+    postgres:
+      host: postgresql
+      port: 5432
+      user: postgres
+      dbName: k4r
+
+service:
+  type: ClusterIP
+  port: 8090
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 300m
+    memory: 512Mi
+
+metrics:
+  serviceMonitor:
+    enabled: false
+    additionalLabels: {}
+    interval: "15s"
+    scrapeTimeout: "" 
+    port: http # name of the port in service.yaml
+    path: /k4r/actuator/prometheus

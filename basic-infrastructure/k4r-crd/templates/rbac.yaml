@@ -1,0 +1,61 @@
+---
+### Service account
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-reader-extended
+  namespace: {{ .Release.Namespace }}
+---
+### Role to allow reading CRDs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: k4r-crd-reader-role
+  labels:
+    # Add these permissions to the "view" default role.
+    rbac.authorization.k8s.io/aggregate-to-view: "true" 
+    rbac.authorization.k8s.io/aggregate-to-cluster-reader: "true"
+rules:
+- apiGroups: ["knowledge4retail.org"]
+  resources: ["interfaces"]
+  verbs: ["get", "list", "watch"]
+---
+### RoleBinding for the defined role and service account above to allow reading CRDs
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: k4r-crd-reader
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: k4r-crd-reader-role
+subjects:
+- kind: ServiceAccount
+  name: api-reader-extended
+  namespace: {{ .Release.Namespace }}
+---
+### RoleBinding for the defined role and service account above to give view permission for all other K8S objects
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: standard-api-reader
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: view
+subjects:
+- kind: ServiceAccount
+  name: api-reader-extended
+  namespace: {{ .Release.Namespace }}
+---
+### Secret containing namespace and access token to be used by api clients
+apiVersion: v1
+kind: Secret
+metadata:
+  name: api-reader-extended-token
+  annotations:
+    kubernetes.io/service-account.name: "api-reader-extended"
+type: kubernetes.io/service-account-token
+---

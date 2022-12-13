@@ -1,0 +1,25 @@
+---
+app:
+  env:
+    apiUrl: https://portalbackend.dev.knowledge4retail.org
+    authIssuer: https://auth.dev.knowledge4retail.org/realms/k4r
+    authClientId: k4r-test
+    storevizUrl: https://storeviz.dev.knowledge4retail.org/?store=
+    dtSchemaPath: https://portal.dev.knowledge4retail.org/assets/dtschema/index.html
+
+ingress:
+  enabled: true
+  annotations:
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: portal.dev.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - portal.dev.knowledge4retail.org
+      secretName: portal.dev.knowledge4retail.org

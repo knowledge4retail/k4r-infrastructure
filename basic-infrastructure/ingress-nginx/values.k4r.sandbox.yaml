@@ -1,0 +1,13 @@
+---
+controller:
+  service:
+    loadBalancerIP: "20.52.182.136"
+    annotations: 
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: "MC_k4r-sandbox_k4r-sandbox-cluster_germanywestcentral"
+      service.beta.kubernetes.io/azure-dns-label-name: "k4r-sandbox"
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-monitoring

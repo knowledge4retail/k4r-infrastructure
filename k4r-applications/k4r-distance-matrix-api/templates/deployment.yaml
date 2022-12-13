@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k4r-distance-matrix-api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "k4r-distance-matrix-api.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels: {{- include "k4r-distance-matrix-api.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "k4r-distance-matrix-api.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+      {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.app.env.activeSpringProfile }}
+            - name: POSTGRES_URL
+              value: {{ .Values.app.env.postgres.url }}
+            - name: POSTGRES_USER
+              value: {{ .Values.app.env.postgres.user }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: db-dt-api-password
+                  optional: false
+            - name: STORE_API_URL
+              value: {{ .Values.app.env.storeApi.url }}
+            - name: HETIDA_BACKEND_URL
+              value: {{ .Values.app.env.hetida.backendUrl }}
+            - name: HETIDA_COMPONENT_ID
+              value: {{ .Values.app.env.hetida.componentId }}         
+          ports:
+            - name: http
+              containerPort: 8095
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /distancematrixapi/swagger-ui.html
+              port: http
+            initialDelaySeconds: 180
+          readinessProbe:
+            httpGet:
+              path: /distancematrixapi/swagger-ui.html
+              port: http
+          resources:
+      {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+      {{- toYaml . | nindent 8 }}
+  {{- end }}

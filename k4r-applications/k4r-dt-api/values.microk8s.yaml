@@ -1,0 +1,28 @@
+---
+app:
+  env:
+    postgres:
+      url: jdbc:postgresql://postgresql:5432/k4r?currentSchema=dt_v1 # Override k4r-dev with your namespace
+      user: k4r
+    kafka:
+      bootstrapServers:
+        consumer: kafka:9092
+        producer: kafka:9092
+    blobstorage:
+      container: k4r-device-images
+
+ingress:
+  issuerRef:
+    name: self-signed-issuer
+  enabled: true
+  hosts:
+    - host: dt-api.knowledge4retail.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - dt-api.knowledge4retail.local
+      secretName: dt-api.knowledge4retail.local
+
+tlsAuthDisabled: true

@@ -1,0 +1,6 @@
+apiVersion: v2
+name: k4r-crd
+description: Custom Resource Definitions to be used by platform components
+type: application
+version: 0.0.1
+appVersion: "v1alpha1"

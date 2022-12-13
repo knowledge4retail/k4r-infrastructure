@@ -1,0 +1,26 @@
+{{- if .Values.metrics.serviceMonitor.enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "k4r-dt-api.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels: {{- include "k4r-dt-api.labels" . | nindent 4 }}
+    {{- if .Values.metrics.serviceMonitor.additionalLabels }}
+    {{- include "common.tplvalues.render" (dict "value" .Values.metrics.serviceMonitor.additionalLabels "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  endpoints:
+    - port: {{ .Values.metrics.serviceMonitor.port }}
+      path: {{ .Values.metrics.serviceMonitor.path }}
+      {{- if .Values.metrics.serviceMonitor.interval }}
+      interval: {{ .Values.metrics.serviceMonitor.interval }}
+      {{- end }}
+      {{- if .Values.metrics.serviceMonitor.scrapeTimeout }}
+      scrapeTimeout: {{ .Values.metrics.serviceMonitor.scrapeTimeout }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  selector:
+    matchLabels: {{- include "k4r-dt-api.selectorLabels" . | nindent 6 }}
+{{- end }}

@@ -1,0 +1,15 @@
+---
+controller:
+  service:
+    loadBalancerIP: "20.113.82.183"
+    # loadBalancerIP: "20.170.35.180" # try with a new public IP
+    annotations: 
+      service.beta.kubernetes.io/azure-load-balancer-resource-group: "MC_k4r-test-instructions_k4r-test-cluster_germanywestcentral"
+      service.beta.kubernetes.io/azure-dns-label-name: "k4r-test"
+      service.beta.kubernetes.io/azure-load-balancer-health-probe-request-path: /healthz
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+      additionalLabels:
+        release: prometheus-monitoring

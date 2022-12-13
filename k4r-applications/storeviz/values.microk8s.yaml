@@ -1,0 +1,19 @@
+---
+app:
+  DT_API_GRAPHQL_ENDPOINT: "https://dt-api.knowledge4retail.local/k4r/graphql"
+  BACKGROUND_COLOR: "#16161d"
+  OFFSET_TO_BOTTOM_LEFT: true
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: self-signed-issuer
+  hosts:
+    - host: storeviz.knowledge4retail.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - storeviz.knowledge4retail.local
+      secretName: storeviz.knowledge4retail.local

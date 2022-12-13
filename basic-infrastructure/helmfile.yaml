@@ -1,0 +1,110 @@
+---
+repositories:
+  - name: bitnami-full-index ### This should contain all the Charts before bitnami cam up with this issue here:https://github.com/bitnami/charts/issues/10539
+    url: https://raw.githubusercontent.com/bitnami/charts/archive-full-index/bitnami
+  - name: bitnami-official   ### Currently not used as it is not working for the old charts. see the note above.
+    url: https://charts.bitnami.com/bitnami
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: prometheus-community
+    url: https://prometheus-community.github.io/helm-charts
+
+
+bases:
+  - ../environments.yaml
+
+
+releases:
+  - name: k4r-crd
+    namespace: "{{ .Namespace }}"
+    chart: k4r-crd
+    values:
+      - k4r-crd/values.yaml
+
+  - name: cert-manager
+    namespace: "{{ .Namespace }}"
+    chart: jetstack/cert-manager
+    version: v1.10.1
+    values:
+      - cert-manager/values.yaml
+      - cert-manager/values.{{ .Environment.Name }}.yaml
+
+  {{ if or (eq .Environment.Name "k4r.dev") (eq .Environment.Name "k4r.sandbox") (eq .Environment.Name "microk8s") (eq .Environment.Name "k4r.test")}}
+  - name: ingress-nginx
+    namespace: "{{ .Namespace }}"
+    chart: ingress-nginx/ingress-nginx
+    version: 4.3.0
+    values:
+      - ingress-nginx/values.yaml
+      - ingress-nginx/values.{{ .Environment.Name }}.yaml
+    needs:
+      - cert-manager
+  {{ end }}
+
+  {{ if or (eq .Environment.Name "k4r.dev") (eq .Environment.Name "k4r.sandbox") (eq .Environment.Name "k4r.test")}}
+  - name: prometheus-monitoring
+    namespace: "{{ .Namespace }}"
+    chart: prometheus-community/kube-prometheus-stack
+    version: 31.0.0
+    values:
+      - prometheus-monitoring/values.yaml
+  {{ end }}
+
+  - name: postgresql
+    namespace: "{{ .Namespace }}"
+    chart: bitnami-full-index/postgresql
+    version: 10.3.4
+    values:
+      - postgresql/values.yaml
+      - postgresql/values.{{ .Environment.Name }}.yaml
+    {{ if or (eq .Environment.Name "k4r.dev") (eq .Environment.Name "k4r.sandbox") (eq .Environment.Name "k4r.test") }}
+    needs:
+      - prometheus-monitoring
+    {{ end }}
+
+  - name: kafka
+    namespace: "{{ .Namespace }}"
+    chart: bitnami-full-index/kafka
+    version: 12.8.0
+    values:
+      - kafka/values.yaml
+      - kafka/values.{{ .Environment.Name }}.yaml   
+
+  - name: mongodb
+    namespace: "{{ .Namespace }}"
+    chart: bitnami-full-index/mongodb
+    version: 10.10.1
+    values:
+      - mongo/values.yaml
+      - mongo/values.{{ .Environment.Name }}.yaml
+    {{ if or (eq .Environment.Name "k4r.dev") (eq .Environment.Name "k4r.sandbox") (eq .Environment.Name "k4r.test") }} 
+    needs:
+      - prometheus-monitoring
+    {{ end }}
+
+  {{ if or (eq .Environment.Name "k4r.dev") (eq .Environment.Name "k4r.test") }}
+  - name: keycloak
+    namespace: "{{ .Namespace }}"  
+    chart: bitnami-full-index/keycloak
+    version: 10.1.6
+    values:
+      - keycloak/values.yaml
+      - keycloak/values.{{ .Environment.Name }}.yaml
+    needs:
+      - cert-manager
+  {{ end }}      
+
+  {{ if or (eq .Environment.Name "k4r.dev") (eq .Environment.Name "k4r.sandbox") (eq .Environment.Name "k4r.test") }}
+  - name: oauth2-proxy
+    namespace: "{{ .Namespace }}"  
+    chart: bitnami-full-index/oauth2-proxy
+    version: 3.3.3
+    values:
+      - oauth2-proxy/values.yaml
+      - oauth2-proxy/values.{{ .Environment.Name }}.yaml
+    needs:
+      - keycloak
+      - cert-manager
+  {{ end }}

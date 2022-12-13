@@ -1,0 +1,49 @@
+# based on https://www.civo.com/learn/using-websockets-with-ingress-controller
+# and hetida/templates/apdapters/k4r-apdapter
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    {{- include "robotics-web.labels" . | nindent 4 }}
+  name: {{include "robotics-web.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "robotics-web.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "robotics-web.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: robotics-web
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: websocket
+              containerPort: 3000
+              protocol: TCP
+          env:
+            - name: ROS_MASTER_URI
+              value: {{ .Values.data.ros_master_uri }}
+            - name: MASTER_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: robotics-mastertoken
+                  optional: false
+            - name: ROS_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}

@@ -1,0 +1,27 @@
+---
+app:
+  env:
+    erpAdapterUrl:
+      url: http://erp-adapter.k4r-sandbox.svc.cluster.local:8080/api/v0
+
+ingress:
+  issuerRef:
+    name: letsencrypt
+  enabled: true
+  hosts:
+    - host: sap-erp-adapter.sandbox.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - sap-erp-adapter.sandbox.knowledge4retail.org
+      secretName: sap-erp-adapter.sandbox.knowledge4retail.org
+
+resources:
+  limits:
+    cpu: "300m"
+    memory: "512Mi"
+  requests:
+    cpu: "100m"
+    memory: "256Mi"

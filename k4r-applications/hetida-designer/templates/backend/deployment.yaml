@@ -1,0 +1,112 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "hetida.fullname" . }}-backend
+  labels:
+    {{- include "hetida.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "hetida.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: backend
+  template:
+    metadata:
+      labels:
+        {{- include "hetida.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: backend
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: hetida-backend
+          image: "{{ .Values.components.backend.image.repository }}:{{ .Values.components.backend.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.components.backend.image.pullPolicy | default .Values.image.pullPolicy}}
+          ports:
+            - name: http
+              containerPort: 8090
+              protocol: TCP
+          livenessProbe:
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            httpGet:
+              path: /api/info
+              port: http
+          readinessProbe:
+            initialDelaySeconds: 30
+            httpGet:
+              path: /api/info
+              port: http
+          env:
+            - name: HD_DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: k4r-passwords
+                  key: db-hetida-password
+                  optional: false            
+            - name: HD_DATABASE_URL # see this page https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/
+              value: postgresql+psycopg2://hetida_designer_dbuser:$(HD_DATABASE_PASSWORD)@{{ .Values.components.backend.postgresql.address }}:5432/hetida_designer_db
+            - name: HD_ENSURE_DB_SCHEMA
+              value: "true"
+            - name: HD_IS_RUNTIME_SERVICE
+              value: "false"  
+            - name: HD_USE_AUTH
+              value: "false"
+            - name: OPENAPI_PREFIX
+              value: "/api"
+            - name: KAFKA_ENABLED
+              value: {{ .Values.components.backend.kafka_enabled | default "false" | quote }}
+            - name: BOOTSTRAP_SERVERS
+              value: {{ .Values.components.backend.kafka_bootstrapServers | default "" | quote }}
+            - name: EXEC_CONSUMER_GROUP
+              value: {{ .Values.components.backend.kafka_execConsumerGroup | default "" | quote }}
+            - name: ORG_HETIDA_DESIGNER_BACKEND_INSTALLED_ADAPTERS
+              value: {{ .Values.components.backend.installed_adapters }}
+      initContainers:
+      - name: init-hetida-db
+        image: docker.io/bitnami/postgresql:11.11.0-debian-10-r9
+        command:
+          - sh
+          - ./create_user_and_database.sh
+        
+        volumeMounts:
+          - name: bash-script-initdb
+            mountPath: /create_user_and_database.sh
+            subPath: create_user_and_database.sh
+          - name: postgresql-initdb
+            mountPath: /hetida-init-db.sql
+            subPath: hetida-init-db.sql
+          
+        env:
+          - name: PGPASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: k4r-passwords
+                key: db-master-password
+                optional: false
+          - name: HD_DATABASE_PASSWORD # password for user hetida_designer_db_user
+            valueFrom:
+              secretKeyRef:
+                name: k4r-passwords
+                key: db-hetida-password
+                optional: false  
+        securityContext:
+          runAsUser: 1001
+      volumes:
+        - name: bash-script-initdb
+          configMap:
+            name: {{ include "hetida.fullname" . }}-hetida-initdb
+        - name: postgresql-initdb
+          configMap:
+            name: {{ include "hetida.fullname" . }}-hetida-initdb
+## TODO: Resource limits
+## Look at Initialization containers ?
+##

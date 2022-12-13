@@ -1,0 +1,14 @@
+---
+issuer:
+  letsencrypt:
+    enabled: false
+    email: mail@localhost
+  letsencryptStaging:
+    enabled: false
+    email: mail@localhost
+
+clientCertificate:
+  commonName: localhost
+
+serverCertificate:
+  commonName: localhost

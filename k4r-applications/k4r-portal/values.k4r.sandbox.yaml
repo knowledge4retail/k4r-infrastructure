@@ -1,0 +1,29 @@
+---
+app:
+  env:
+    apiUrl: https://portalbackend.sandbox.knowledge4retail.org
+    authIssuer: https://auth.sandbox.knowledge4retail.org/auth/realms/k4r
+    authClientId: k4r-test
+    storevizUrl: https://storeviz.sandbox.knowledge4retail.org/?store=
+    dtSchemaPath: https://portal.sandbox.knowledge4retail.org/assets/dtschema/index.html
+
+ingress:
+  enabled: true
+  annotations:
+#auth-url, auth-signin and auth-response headers annotation only in sandbox to generate oauth2proxy cookies for portalbackend swagger ui access
+    nginx.ingress.kubernetes.io/auth-url: "https://oauth2proxy.sandbox.knowledge4retail.org/oauth2/auth"
+    nginx.ingress.kubernetes.io/auth-signin: "https://oauth2proxy.sandbox.knowledge4retail.org/oauth2/start?rd=$scheme://$best_http_host$request_uri"
+    nginx.ingress.kubernetes.io/auth-response-headers: "X-Auth-Request-User, X-Auth-Request-Email, X-Auth-Request-Access-Token, Authorization"
+    acme.cert-manager.io/http01-edit-in-place: "true"
+    nginx.ingress.kubernetes.io/proxy-buffer-size: "16k"
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: portal.sandbox.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - portal.sandbox.knowledge4retail.org
+      secretName: portal.sandbox.knowledge4retail.org

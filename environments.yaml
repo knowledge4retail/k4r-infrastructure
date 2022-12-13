@@ -1,0 +1,7 @@
+environments:
+  microk8s: {}
+  minikube: {}
+  default: {}
+  "k4r.dev": {}
+  "k4r.sandbox": {}
+  "k4r.test": {}

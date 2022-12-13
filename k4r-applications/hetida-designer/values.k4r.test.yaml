@@ -1,0 +1,48 @@
+---
+components:
+  backend:
+    installed_adapters:  k4r-adapter|K4R Platform Adapter|https://hetida.test.knowledge4retail.org/adapter-k4r|http://hetida-designer-adapter-k4r:8093/adapter-k4r
+  runtime:
+    image:
+      repository: registry.gitlab.com/knowledge4retail/k4r-plugins/designer-runtime
+      tag: "0.8.1.latest"
+ingress:
+  enabled: true
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: hetida.test.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend
+              port: 8080
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port: 8080
+        - path: /adapter-k4r
+          pathType: Prefix
+          backend:
+            service:
+              name: adapter-k4r
+              port: 8093
+  tls:
+    - hosts:
+        - hetida.test.knowledge4retail.org
+      secretName: hetida.test.knowledge4retail.org
+
+adapters:
+  k4r:
+    enabled: true
+    image:
+      pullPolicy: IfNotPresent 
+      repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-hetida-adapter
+      tag: "0.0.9"
+    service:
+      type: ClusterIP
+      port: 8093

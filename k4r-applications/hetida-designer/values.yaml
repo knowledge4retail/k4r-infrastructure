@@ -1,0 +1,94 @@
+---
+components:
+  backend:
+    installed_adapters: ""
+    image:
+      repository: hetida/designer-backend
+      tag: ""
+      pullPolicy: ""
+    postgresql:
+      address: postgresql
+    service:
+      type: ClusterIP
+      port: 8080
+  frontend:
+    image:
+      repository: hetida/designer-frontend
+      tag: ""
+      pullPolicy: ""
+    service:
+      type: ClusterIP
+      port: 8080
+  runtime:
+    image:
+      repository: hetida/designer-runtime
+      tag: ""
+      pullPolicy: ""
+    apiPrefix: "/runtime" # Overrides the api Prefix for runtime whose default is '/runtime'.
+    service:
+      type: ClusterIP
+      port: 8090
+
+# if adapters are provided as images
+adapters:
+  sample:
+    enabled: false
+    image:
+      pullPolicy: IfNotPresent
+      repository: some/repo
+      tag: "1.0"
+    service:
+      type: ClusterIP
+      port: 8080
+  k4r:
+    enabled: false
+    image:
+      pullPolicy: IfNotPresent
+      repository: registry.gitlab.com/knowledge4retail/k4r-plugins/k4r-hetida-adapter
+      tag: "0.0.9"
+    service:
+      type: ClusterIP
+      port: 8093
+
+replicaCount: 1
+
+image:
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+# if needed so set storage class
+storageClass: default
+
+ingress:
+  enabled: true
+  issuerRef: {}
+  hosts:
+    - host: hetida.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend
+              port: 8080
+        - path: /api
+          pathType: Prefix
+          backend:
+            service:
+              name: backend
+              port: 8080
+# if adapter is deployed
+#        - path: /adapter-sample
+#          pathType: Prefix
+#          backend:
+#            service:
+#              name: adapter-sample
+#              port: 8093
+# if https-certs are provided
+#  tls:
+#    - hosts:
+#        - hetida.default.knowledge4retail.org
+#      secretName: hetida.default.knowledge4retail.org
+
+tlsAuthDisabled: false

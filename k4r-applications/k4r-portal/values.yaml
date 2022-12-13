@@ -1,0 +1,37 @@
+---
+app:
+  env:
+    apiUrl: https://portalbackend.default.knowledge4retail.org
+    authIssuer: https://auth.default.knowledge4retail.org/auth/realms/k4r
+    authClientId: k4r-test
+    storevizUrl: https://storeviz.default.knowledge4retail.org/?store=
+  dependencies:
+    k4r: 
+      pvcName: k4r-dt-api-db-schema-docu
+    
+
+ingress:
+  enabled: true
+  issuerRef:
+    name: letsencrypt
+  hosts:
+    - host: portal.default.knowledge4retail.org
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - hosts:
+        - portal.default.knowledge4retail.org
+      secretName: portal.default.knowledge4retail.org
+
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/knowledge4retail/k4r-portal
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+service:
+  type: ClusterIP
+  port: 8080

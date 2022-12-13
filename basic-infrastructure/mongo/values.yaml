@@ -1,0 +1,16 @@
+---
+service:
+  port: 27017
+
+metrics:
+  enabled: false
+  serviceMonitor:
+    enabled: false
+
+auth:
+  existingSecret: "mongodb-passwords"
+  enabled: true
+  username: k4r
+  database: roslog
+
+strategyType: Recreate

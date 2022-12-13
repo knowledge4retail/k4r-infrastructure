@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "k4r-portal-backend.fullname" . }}
+  labels:
+    {{- include "k4r-portal-backend.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "k4r-portal-backend.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "k4r-portal-backend.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          env:
+            - name: PORTALBACKEND_PUBLICFQDN
+              value: {{ .Values.app.env.publicFQDN }}          
+            - name: PORTALBACKEND_ALLOWED-ORIGINS
+              value: {{ .Values.app.env.allowedOrigins }}
+            - name: PORTALBACKEND_KUBEAPI_URL
+              value: {{ .Values.app.env.kubeApi.url }}
+            - name: PORTALBACKEND_KUBEAPI_NAMESPACE
+              valueFrom:
+                secretKeyRef:
+                  name: api-reader-extended-token
+                  key: namespace
+            - name: PORTALBACKEND_KUBEAPI_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: api-reader-extended-token
+                  key: token
+            - name: PORTALBACKEND_DTAPI_URL
+              value: {{ .Values.app.env.dtApi.url }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /swagger-ui/index.html
+              port: http
+            initialDelaySeconds: 120
+          readinessProbe:
+            httpGet:
+              path: /swagger-ui/index.html
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

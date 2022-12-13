@@ -1,0 +1,6 @@
+apiVersion: v2
+name: k4r-portal
+description: A Helm chart for K4R User Interface
+type: application
+version: 0.1.0
+appVersion: "v0.1.7"
